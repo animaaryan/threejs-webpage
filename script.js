@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // glTF loader
 const loader = new GLTFLoader();
@@ -13,9 +12,17 @@ let icosphere
 let small_cylinder
 let hemisphere
 
+// Velocity calculations
+let startTime = performance.now();
+const minY = -0.4;
+const maxY = 0.4;
+const amplitude = (maxY - minY) / 2;
+const centerY = (maxY + minY) / 2;
+const speed = 0.0004;
+
 // Setup a scene for the webpage
 const bgScene = new THREE.Scene()
-bgScene.background = new THREE.Color( 0xB2A2BB);
+bgScene.background = new THREE.Color(0xB2A2BB);
 const canvas = document.getElementById("experience-canvas");
 
 // Set variables for the sizes
@@ -56,26 +63,27 @@ loader.load('public/models/shapes.glb', function (gltf) {
     // Torus
     torus = model.getObjectByName("Donut")
     torus.position.set(-5, 1, 2)
-    torus.rotation.set(1, 0, 0)
+
 
     // Hollow
     hollow = model.getObjectByName("Hollow")
     hollow.position.set(5, 2, 1)
-    hollow.rotation.set(1.6, 1.6, 1.1)
+
 
     // Icosphere
     icosphere = model.getObjectByName("Icosphere")
-    icosphere.position.set(-1,-2, 4)
-    icosphere.rotation.set(1, 0, 12)
+    icosphere.position.set(-1, -2, 4)
+
 
     // Hemisphere
     hemisphere = model.getObjectByName("Hemisphere")
-    hemisphere.position.set(5, -2, 2)
+    hemisphere.position.set(5, -5, 3)
+
 
     // Cylinder
     small_cylinder = model.getObjectByName("Small_Cylinder")
     small_cylinder.position.set(0.2, 2, 1)
-    small_cylinder.rotation.set(0.5, 2, 1)
+
 
 }, undefined, function (error) {
 
@@ -92,11 +100,11 @@ renderer.gammaFactor = 2.2;
 renderer.outputEncoding = THREE.sRGBEncoding;
 
 // Directional Light
-const sun = new THREE.DirectionalLight(0xFFFFFF, 3);
+const sun = new THREE.DirectionalLight(0xFFFFFF, 4);
 
 // Ambient light
-const light = new THREE.AmbientLight( 0x404040, 20); // soft white light
-bgScene.add( light );
+const light = new THREE.AmbientLight(0x404040, 25); // soft white light
+bgScene.add(light);
 
 // Add shadows
 sun.castShadow = true;
@@ -109,8 +117,8 @@ sun.shadow.camera.bottom = -100;
 sun.shadow.normalBias = 0.3;
 
 // Set the sun's position
-sun.position.set(20, 10, 0);
-sun.target.position.set(20, 0, 0);
+sun.position.set(60, 10, 0);
+sun.target.position.set(20, 50, 0);
 bgScene.add(sun);
 
 // Create a camera
@@ -120,7 +128,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1, // Near clip
     10 // Far clip
 );
-camera.position.z = 6
+camera.position.z = 6;
 
 // // Add camera controls
 // const controls = new OrbitControls(camera, canvas);
@@ -135,24 +143,24 @@ camera.position.z = 7;
 let scrollY = 0
 
 window.addEventListener("scroll", () => {
-  const t = window.scrollY * 0.001
-  const i = window.scrollY * -0.002
-  const h = window.scrollY * 0.002
+    const t = window.scrollY * 0.001
+    const i = window.scrollY * -0.002
+    const h = window.scrollY * 0.002
 
-  torus.rotation.x = t
-  torus.material.opacity = THREE.MathUtils.clamp(t, 0, 1)
+    torus.rotation.x = t
+    torus.material.opacity = THREE.MathUtils.clamp(t, 0, 1)
 
-  icosphere.rotation.x = i
-  icosphere.material.opacity = THREE.MathUtils.clamp(i, 0, 1)
+    icosphere.rotation.x = i
+    icosphere.material.opacity = THREE.MathUtils.clamp(i, 0, 1)
 
-  hollow.rotation.x = h;
-  hollow.material.opacity = THREE.MathUtils.clamp(h, 0, 1)
+    hollow.rotation.x = h;
+    hollow.material.opacity = THREE.MathUtils.clamp(h, 0, 1)
 
-  hemisphere.rotation.x = i;
-  hemisphere.material.opacity = THREE.MathUtils.clamp(i, 0, 1)
+    hemisphere.rotation.x = i;
+    hemisphere.material.opacity = THREE.MathUtils.clamp(i, 0, 1)
 
-  small_cylinder.rotation.x = h;
-  small_cylinder.material.opacity = THREE.MathUtils.clamp(h, 0, 1)
+    small_cylinder.rotation.x = h;
+    small_cylinder.material.opacity = THREE.MathUtils.clamp(h, 0, 1)
 
 })
 
@@ -170,8 +178,33 @@ function handleResize() {
 window.addEventListener("resize", handleResize);
 
 // Render the scene
-function animate() {
+function animate(time) {
     renderer.render(bgScene, camera);
+    if (torus) {
+        const t = (time - startTime) * speed;
+        torus.position.y = centerY + Math.sin(t) * amplitude;
+    }
+
+    if(hollow) {
+        const t = (time - startTime) * speed;
+        hollow.position.y = centerY + Math.sin(t) * -amplitude ;
+    }
+
+    if(icosphere){
+        const t = (time - startTime) * speed;
+        icosphere.position.y = centerY  + Math.sin(t) * -amplitude - 0.5 ;
+    }
+
+    if(small_cylinder){
+        const t = (time - startTime) * speed;
+        small_cylinder.position.y = centerY + Math.sin(t) * amplitude - 0.5 ;
+    }
+
+    if(hemisphere){
+        const t = (time - startTime) * speed;
+        hemisphere.position.y = centerY - 2 + Math.sin(t) * amplitude - 0.5 ;
+    }
+
     requestAnimationFrame(animate)
 }
 requestAnimationFrame(animate)
