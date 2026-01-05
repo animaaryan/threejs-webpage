@@ -15,6 +15,7 @@ let hemisphere
 
 // Setup a scene for the webpage
 const bgScene = new THREE.Scene()
+bgScene.background = new THREE.Color( 0xB2A2BB);
 const canvas = document.getElementById("experience-canvas");
 
 // Set variables for the sizes
@@ -54,7 +55,7 @@ loader.load('public/models/shapes.glb', function (gltf) {
 
     // Torus
     torus = model.getObjectByName("Donut")
-    torus.position.set(-4, 1, 2)
+    torus.position.set(-5, 1, 2)
     torus.rotation.set(1, 0, 0)
 
     // Hollow
@@ -64,8 +65,8 @@ loader.load('public/models/shapes.glb', function (gltf) {
 
     // Icosphere
     icosphere = model.getObjectByName("Icosphere")
-    icosphere.position.set(-1,-2, 2)
-    icosphere.rotation.set(1, 0, 0)
+    icosphere.position.set(-1,-2, 4)
+    icosphere.rotation.set(1, 0, 12)
 
     // Hemisphere
     hemisphere = model.getObjectByName("Hemisphere")
@@ -83,12 +84,12 @@ loader.load('public/models/shapes.glb', function (gltf) {
 });
 
 // Create the renderer
-const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1;
+renderer.gammaFactor = 2.2;
+renderer.outputEncoding = THREE.sRGBEncoding;
 
 // Directional Light
 const sun = new THREE.DirectionalLight(0xFFFFFF, 3);
@@ -99,16 +100,16 @@ bgScene.add( light );
 
 // Add shadows
 sun.castShadow = true;
-sun.shadow.mapSize.width = 4096;
-sun.shadow.mapSize.height = 4096;
+sun.shadow.mapSize.width = 1024;
+sun.shadow.mapSize.height = 1024;
 sun.shadow.camera.left = -100;
 sun.shadow.camera.right = 100;
 sun.shadow.camera.top = 100;
 sun.shadow.camera.bottom = -100;
-sun.shadow.normalBias = 0.1;
+sun.shadow.normalBias = 0.3;
 
 // Set the sun's position
-sun.position.set(50,10, 0);
+sun.position.set(20, 10, 0);
 sun.target.position.set(20, 0, 0);
 bgScene.add(sun);
 
@@ -117,7 +118,7 @@ const camera = new THREE.PerspectiveCamera(
     75, // Field of view
     sizes.width / sizes.height, // Camera size
     0.1, // Near clip
-    1000 // Far clip
+    10 // Far clip
 );
 camera.position.z = 6
 
@@ -135,7 +136,7 @@ let scrollY = 0
 
 window.addEventListener("scroll", () => {
   const t = window.scrollY * 0.001
-  const i = window.scrollY * -0.008
+  const i = window.scrollY * -0.002
   const h = window.scrollY * 0.002
 
   torus.rotation.x = t
@@ -170,9 +171,12 @@ window.addEventListener("resize", handleResize);
 
 // Render the scene
 function animate() {
+    renderer.render(bgScene, camera);
     requestAnimationFrame(animate)
+}
+requestAnimationFrame(animate)
 
+function render() {
     renderer.render(bgScene, camera);
 }
-renderer.setAnimationLoop(animate);
 
